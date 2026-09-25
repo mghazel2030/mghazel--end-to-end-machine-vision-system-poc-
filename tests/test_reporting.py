@@ -14,5 +14,11 @@ from vision_poc.reporting import save_report
 def test_saved_artifacts(tmp_path):
     config = load_config(Path(__file__).resolve().parents[1] / "config/system.yaml")
     save_report(calculate(config), tmp_path)
-    for name in ["engineering_report.md", "01_calculations/engineering_results.json", "01_calculations/metrics.csv", "02_feasibility/checks.csv", "03_visualizations/scratch_sampling.png", "03_visualizations/feasibility.png"]:
+    expected_files = [
+        "01_metrics/metrics.csv",
+        "02_feasibility/checks.csv",
+        "03_visualizations/scratch_sampling.png",
+        "03_visualizations/feasibility.png",
+    ]
+    for name in expected_files:
         assert (tmp_path / name).stat().st_size > 0

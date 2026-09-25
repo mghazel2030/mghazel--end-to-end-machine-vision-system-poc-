@@ -1,7 +1,7 @@
-name: Step 1 Python CI
+name: Validate Machine Vision PoC
 on:
   push:
-    branches: [main, develop, 'feature/**']
+    branches: [main, develop, "feature/**"]
   pull_request:
     branches: [main, develop]
 jobs:
@@ -9,22 +9,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.12']
+        python-version: ["3.10","3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
+        with: {python-version: "${{ matrix.python-version }}"}
       - run: python -m pip install --upgrade pip
-      - run: pip install -e '.[dev]'
-      - run: ruff check src scripts tests
-      - run: pytest -q
-      - run: python scripts/main.py
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m ruff check src scripts tests
+      - run: python -m pytest -q
+      - name: Smoke run (small dataset)
+        run: |
+          python - <<'PY'
+          import yaml
+          p="config/system.yaml"
+          d=yaml.safe_load(open(p));d["dataset"]["total_images"]=20
+          yaml.safe_dump(d,open("config/ci.yaml","w"))
+          PY
+          python scripts/main.py --config config/ci.yaml --output results/step_02
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: engineering-results-py${{ matrix.python-version }}
-          path: |
-            results/step_01/
-            logs/
+          name: step-02-results-py${{ matrix.python-version }}
+          path: results/step_02/

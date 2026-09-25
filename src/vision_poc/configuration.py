@@ -1,8 +1,5 @@
-"""Validated YAML configuration loading.
-
-Author: mghazel
-Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+"""Configuration loading/validation.
+Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-25
 """
 from pathlib import Path
 from typing import Any
@@ -11,28 +8,27 @@ import yaml
 
 
 class ConfigurationError(ValueError):
-    """Raised when a configuration file is missing or structurally invalid."""
+    """Raised for invalid project configuration."""
 
 def load_config(path: Path) -> dict[str, Any]:
-    """Load and validate the high-level engineering configuration.
+    """Load YAML configuration.
 
     Args:
-        path: Path to the Step 1 YAML configuration.
-
+        path: YAML file.
     Returns:
-        Dictionary of required configuration sections and their contents.
-
+        Validated configuration mapping.
     Raises:
-        ConfigurationError: If file is absent, malformed, or missing required sections.
-        OSError: If reading fails for reasons other than a missing file.
+        FileNotFoundError: File absent.
+        ConfigurationError: Required content invalid.
+        yaml.YAMLError: YAML invalid.
     """
-    if not path.is_file():
-        raise ConfigurationError(f"Configuration not found: {path}")
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except yaml.YAMLError as exc:
-        raise ConfigurationError(f"Invalid YAML: {exc}") from exc
-    required = ("part", "inspection", "station", "camera", "lens", "outputs")
-    if not isinstance(data, dict) or any(not isinstance(data.get(k), dict) for k in required):
-        raise ConfigurationError(f"Expected configuration sections: {required}")
+    data=yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data,dict):
+        raise ConfigurationError("Configuration root must be a mapping")
+    for key in ("application","camera","motion","dataset"):
+        if key not in data:
+            raise ConfigurationError(f"Missing section: {key}")
+    d=data["dataset"]
+    if d["image_width_px"]<=0 or d["image_height_px"]<=0 or d["total_images"]<5:
+        raise ConfigurationError("Invalid dataset dimensions/count")
     return data
