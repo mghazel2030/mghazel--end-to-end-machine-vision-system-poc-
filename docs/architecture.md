@@ -1,19 +1,26 @@
-# Step 1 — High-level architecture
+# Architecture — cumulative through Step 2
 
 ```mermaid
 flowchart TD
-  A[Requirements & acceptance criteria] --> B[Quantitative engineering]
-  B --> C[Camera / optics / illumination]
-  C --> D[Trigger & acquisition — Step 2 simulation]
-  D --> E[Preprocessing / localization / rectification — Step 3]
-  E --> F[Classical CV: edges & corners — Step 3]
-  E --> G[PyTorch segmentation: scratches — Step 3]
-  F --> H[Decision fusion — Step 3]
-  G --> H
-  H --> I[PLC handshake / reject simulation — Step 4]
-  H --> J[Traceability, QA and reports — Step 4]
-  I --> K[FAT / SAT / monitoring — Step 5 design]
-  J --> K
+ A[Physical requirements] --> B[Step 1 quantitative engineering]
+ B --> C[Camera / lens / lighting design]
+ C --> D[Step 2 synthetic acquisition simulator]
+ D --> E[Pose + matte texture + illumination + noise]
+ E --> F{Defect injection}
+ F --> G[Normal]
+ F --> H[Scratch / cut]
+ F --> I[Edge damage]
+ F --> J[Corner damage]
+ F --> K[Mixed]
+ G --> L[Image + mask + annotation]
+ H --> L
+ I --> L
+ J --> L
+ K --> L
+ L --> M[Train / Validation / Test]
+ M --> N[QA montage + manifest]
+ N --> O[Step 3: OpenCV + PyTorch]
 ```
 
-**Step 1 implemented:** YAML config, validated mathematical design, checks, reports, visualizations, tests and CI. The acquisition/CV/AI/PLC modules shown above are planned, **not implemented** in Step 1.
+Step 2 simulates data acquisition only. It does not claim optical photorealism,
+factory validation, trained-model accuracy, PLC integration or deployment.

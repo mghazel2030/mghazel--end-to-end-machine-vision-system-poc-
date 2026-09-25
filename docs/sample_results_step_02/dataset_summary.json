@@ -1,0 +1,23 @@
+{
+  "total": 400,
+  "counts": {
+    "test|corner_damage": 12,
+    "test|edge_damage": 12,
+    "test|mixed": 12,
+    "test|normal": 12,
+    "test|scratch": 12,
+    "train|corner_damage": 56,
+    "train|edge_damage": 56,
+    "train|mixed": 56,
+    "train|normal": 56,
+    "train|scratch": 56,
+    "validation|corner_damage": 12,
+    "validation|edge_damage": 12,
+    "validation|mixed": 12,
+    "validation|normal": 12,
+    "validation|scratch": 12
+  },
+  "annotations": "results/step_02/03_annotations/annotations.jsonl",
+  "manifest": "results/step_02/04_qa/manifest.csv",
+  "qa_montage": "results/step_02/04_qa/dataset_montage.png"
+}
