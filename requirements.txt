@@ -1,0 +1,10 @@
+# Step 1 runtime; use `pip install -e ".[dev]"` for development.
+# YAML configuration and machine-readable engineering assumptions.
+PyYAML>=6,<7
+# Engineering visualization (headless Agg backend).
+matplotlib>=3.7,<4
+# Testing and linting (development/CI only).
+pytest>=7,<9
+ruff>=0.6,<1
+# Step 3 planned (NOT needed in Step 1): numpy, opencv-python, torch, scikit-learn.
+# Vendor camera/PLC SDKs are NOT needed for this simulated Step 1.

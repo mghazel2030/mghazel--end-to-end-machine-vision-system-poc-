@@ -1,0 +1,47 @@
+project:
+  name: mghazel--end-to-end-machine-vision-system-poc
+  version: '0.1.0'
+  author: mghazel
+  submitted_to: Ascension Automation Solutions Ltd.
+  specification_date: '2026-09-25'
+  # Assumptions, NOT customer-supplied requirements.
+part:
+  width_mm: 200.0
+  height_mm: 120.0
+  max_rotation_deg: 20.0
+  max_translation_mm: 3.0
+  pitch_mm: 450.0
+inspection:
+  minimum_scratch_width_mm: 0.5
+  minimum_scratch_length_mm: 5.0
+  minimum_edge_damage_mm: 2.0
+  minimum_corner_damage_mm: 2.0
+  min_pixels_across_scratch: 5.0
+  max_motion_blur_pixels: 0.2
+  target_recall: 0.95
+  max_false_reject_rate: 0.05
+  processing_budget_ms: 200.0
+station:
+  conveyor_speed_mm_s: 500.0
+  fov_width_mm: 240.0
+  fov_height_mm: 200.0
+  nominal_working_distance_mm: 350.0
+  nominal_exposure_us: 30.0
+  pixel_depth_bits: 8
+camera:
+  model: Basler a2A2440-98g5mBAS
+  width_px: 2448
+  height_px: 2048
+  pixel_pitch_um: 3.45
+  sensor_format: 2/3-inch
+  shutter: global
+  interface: 5GigE
+  rated_fps_nominal: 80.8
+lens:
+  model: Computar M1228-MPW3
+  focal_length_mm: 12.0
+  supported_format: 2/3-inch
+  mount: C
+  # Initial thin-lens estimate; final FOV verified using manufacturer charts and real setup.
+outputs:
+  directory: results/step_01

@@ -1,0 +1,11 @@
+subsystem,candidate,quantity,status,engineering rationale,verification required,price CAD
+Camera,Basler a2A2440-98g5mBAS 5MP mono global-shutter 5GigE,1,manufacturer-spec candidate,"2448x2048; 3.45um; 2/3-inch; ~80.8 fps",Confirm availability/interface/cable/trigger,RFQ
+Lens,Computar M1228-MPW3 12mm C-mount 2/3-inch 6MP,1,manufacturer-spec candidate,"12mm; 2/3-inch coverage; nominal WD ~353mm for 240mm FOV",Verify actual FOV MTF distortion DOF and focus at WD,RFQ
+Illumination,High-output diffuse white LED strobe with controller,1,architecture-level candidate,30us exposure demands sufficient irradiance,Photometric bench test and uniformity,RFQ
+Trigger,Photoelectric sensor with configurable debounce,1,architecture-level candidate,One trigger per isolated part,Test repeatability and part tracking,RFQ
+Conveyor,Existing conveyor 0.5m/s with encoder optional,1,assumed existing,0.45m pitch gives ~1.11 parts/s,Validate spacing vibration and speed variation,TBD
+Compute,Industrial PC 16GB RAM SSD CPU + optional NVIDIA GPU,1,architecture-level candidate,200ms processing budget at ~1.11 parts/s,Profile real model and thermal headroom,RFQ
+Network,5GigE-capable NIC and shielded cable,1,architecture-level candidate,~5MB raw per frame; full rated fps ~405MB/s,Check sustained network throughput packet loss and PoE requirements,RFQ
+PLC,Existing PLC with trigger/result handshake,1,assumed existing,Part-ID/result association and fail-safe reject,Agree protocol and fault behavior,TBD
+Enclosure,Opaque guarded lighting enclosure and rigid camera mount,1,architecture-level candidate,Control ambient light and motion vibration,Safety and mechanical review,RFQ
+Reject,PLC-driven reject mechanism with sensor feedback,1,architecture-level candidate,Physical part association and reject verification,Actuator timing and safety,TBD
