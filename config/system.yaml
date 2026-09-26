@@ -43,3 +43,7 @@ training:
   probability_threshold: 0.5
   minimum_scratch_fraction: 0.0005
   device: auto
+integration:
+  reject_distance_mm: 750
+  software_latency_target_ms: 200
+  calibrate_scratch_threshold: true

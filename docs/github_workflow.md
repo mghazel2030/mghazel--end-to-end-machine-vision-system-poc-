@@ -1,34 +1,40 @@
-# Git/GitHub Workflow — Feature #03
+# Git/GitHub Workflow — Step #4
 
 ## Mental model
-- `main`: released/stable project state.
-- `develop`: integration branch containing reviewed features intended for the next release.
-- `feature/03-hybrid-cv-pytorch`: isolated workspace for Step #3 changes.
+- `main`: released/accepted project state.
+- `develop`: integrated development baseline.
+- `feature/04-integration-evaluation`: isolated workspace for Step #4.
+- A commit is a local snapshot. A push publishes commits. A pull request asks GitHub to review/merge one branch into another.
 
-## 1. Synchronize after Step #2 PRs are merged
+## 1. Synchronize before starting
+After Step #3 PR #1 and PR #2 are merged:
 ```powershell
 git switch main
 git pull origin main
 git switch develop
 git pull origin develop
 ```
-`git switch` changes the checked-out branch. `git pull origin <branch>` downloads the remote branch and integrates its latest commits locally.
+`git switch` changes the checked-out branch. `git pull origin <branch>` updates that local branch from GitHub.
 
-## 2. Create Step #3 branch exactly once
+## 2. Create the Step #4 feature branch
 ```powershell
-git switch -c feature/03-hybrid-cv-pytorch
+git switch -c feature/04-integration-evaluation
 ```
-`-c` means **create**. If the branch already exists, use `git switch feature/03-hybrid-cv-pytorch` without `-c`.
-
-Confirm before copying files:
+Use `-c` only when the branch does **not** already exist. If it exists:
+```powershell
+git switch feature/04-integration-evaluation
+```
+Verify before copying any files:
 ```powershell
 git branch
 git status
 ```
-The `*` must be beside `feature/03-hybrid-cv-pytorch`.
+The `*` must be beside `feature/04-integration-evaluation`.
 
-## 3. Copy the cumulative Step #3 ZIP NOW
-Extract the Step #3 ZIP to a temporary folder. Copy its contents into the repository root and allow updated files to overwrite their Step #2 versions. Do **not** copy the ZIP before switching to the feature branch. The ZIP is cumulative: Step #1 + corrected Step #2 + new Step #3. Git will calculate the Step #3 delta.
+## 3. Copy the cumulative Step #4 project — exactly here
+Only **after** Feature #04 is active, extract the supplied ZIP to a temporary folder and copy its contents over the repository root, allowing updated files to overwrite prior versions. Do not delete `.git`. Do not copy a `.venv` from another machine.
+
+Why timing matters: Git compares the Step #4 working tree with the Step #3 commit inherited by the feature branch. If you copy while on `develop` or `main`, the uncommitted Step #4 changes are attached to the wrong working branch and the intended feature PR history becomes confusing.
 
 ## 4. Install and validate before staging
 ```powershell
@@ -39,59 +45,74 @@ python -m pytest -q
 python scripts/main.py --skip-training
 python scripts/main.py
 ```
-`pip check` verifies dependency consistency. Ruff performs static quality checks. Pytest runs regression/unit tests. The skip-training command checks the fast deterministic pipeline; the final command performs training and hybrid inference.
+`pip check` validates installed dependency consistency. Ruff is static source quality. Pytest is regression/unit testing. The skip-training run is a fast deterministic smoke path. The final run exercises training, calibration, held-out evaluation, and PLC simulation.
 
-## 5. Review what Git sees
+## 5. Inspect changes before committing
 ```powershell
 git status
 git diff
 ```
-`git status` lists untracked/modified/staged files. `git diff` shows unstaged line-level changes. Review before staging.
+`git status` shows changed/untracked files. `git diff` shows unstaged line-level changes. Review both before staging.
 
 ## 6. Stage and commit
 ```powershell
 git add .
 git status
-git commit -m "feat(03): add hybrid OpenCV and PyTorch inspection pipeline"
+git commit -m "feat(04): integrate evaluation and PLC reject simulation"
 ```
-`git add .` places current changes in the staging area. `git commit` creates the local permanent snapshot from exactly what is staged.
+`git add .` stages the reviewed working-tree changes. The second `git status` shows exactly what the commit will contain. `git commit` records that staged snapshot locally.
 
-## 7. Publish the feature branch
+## 7. Publish Feature #04
 First push:
 ```powershell
-git push -u origin feature/03-hybrid-cv-pytorch
+git push -u origin feature/04-integration-evaluation
 ```
-`-u` establishes the upstream relationship. Later pushes from this branch need only `git push`.
+`-u` establishes the upstream relationship. Later pushes from this branch can normally use only `git push`.
 
 ## 8. Pull Request #1 — feature → develop
-**Base:** `develop`  
-**Compare:** `feature/03-hybrid-cv-pytorch`
+Base: `develop`  
+Compare: `feature/04-integration-evaluation`
 
-**Title:** `Feature #03: Hybrid OpenCV geometry inspection and PyTorch scratch segmentation`
+**Title:** `Feature #04: End-to-end evaluation, decision calibration and PLC reject simulation`
 
-**Description:** Implements deterministic preprocessing, part localization, orientation/rectification and geometry inspection; adds compact PyTorch U-Net scratch segmentation, training/validation/test metrics, hybrid PASS/REJECT inference, saved intermediate results, tests, CI updates and cumulative documentation. Synthetic-domain results demonstrate software feasibility only; real factory validation remains required.
+**Description:**
+`Integrates the hybrid inspector across held-out synthetic data; calibrates the scratch decision threshold on validation data only; adds part-level TP/TN/FP/FN, false-accept/false-reject and latency metrics, per-class results, failure-case visualization, PLC/reject-event simulation, tests, CI updates and cumulative documentation. Results remain synthetic-domain PoC evidence, not factory acceptance metrics.`
 
-Wait for green CI and review, then merge.
+Wait for green CI, review the Files Changed tab, then merge.
 
 ## 9. Pull Request #2 — develop → main
-First synchronize local develop after PR #1 merge:
+After PR #1:
 ```powershell
 git switch develop
 git pull origin develop
 ```
+Base: `main`  
+Compare: `develop`
 
-**Base:** `main`  
-**Compare:** `develop`
+**Title:** `Release Step #04: Integrated inspection evaluation and reject-system simulation`
 
-**Title:** `Release Step #03: Hybrid CV and PyTorch defect-inspection pipeline`
+**Description:**
+`Promotes reviewed Step #04 integration/evaluation functionality from develop to main, including validation-only calibration, held-out test metrics, latency/failure analysis, PLC event simulation, automated tests and documentation. Physical PLC/camera integration and factory acceptance remain Step #05/commissioning activities.`
 
-**Description:** Promotes reviewed Step #03 OpenCV/PyTorch inspection, tests, reproducible outputs, model-training workflow and documentation from develop to main. CI must pass. Results remain synthetic-domain PoC evidence, not factory acceptance metrics.
-
-After PR #2 merges:
+## 10. Synchronize after release — then stop
 ```powershell
 git switch main
 git pull origin main
 git switch develop
 git pull origin develop
 ```
-Stop here. Create `feature/04-integration-evaluation` only when Step #4 work actually begins.
+Do **not** create Feature #05 yet. Create it only when Step #5 begins.
+
+## Command reference
+| Command | Meaning | Typical use |
+|---|---|---|
+| `git status` | Show working-tree/staging state | Before and after staging |
+| `git branch` | List branches; `*` marks active branch | Before copying a new step |
+| `git switch X` | Switch to existing branch X | Navigation |
+| `git switch -c X` | Create and switch to new branch X | Once per new feature |
+| `git pull origin X` | Fetch + integrate remote X locally | After merges/before branching |
+| `git diff` | Show unstaged content changes | Code review before staging |
+| `git add .` | Stage changes | Before commit |
+| `git commit -m ...` | Save staged snapshot locally | After validation |
+| `git push -u origin X` | First push + set upstream | First publication of branch |
+| `git push` | Publish later local commits | Subsequent updates |

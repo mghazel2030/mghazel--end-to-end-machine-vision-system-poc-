@@ -12,6 +12,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
+from .classical_cv import localize_part, preprocess_image, rectify_part
+
 
 class ScratchSegmentationDataset(Dataset):
     """Load synthetic images and scratch-relevant masks from JSONL annotations."""
@@ -57,8 +59,10 @@ class ScratchSegmentationDataset(Dataset):
         mask = cv2.imread(str(self.root / record["mask"]), cv2.IMREAD_GRAYSCALE)
         if image is None or mask is None:
             raise FileNotFoundError("Dataset image or mask could not be loaded")
-        image = cv2.resize(image, self.image_size, interpolation=cv2.INTER_AREA)
-        mask = cv2.resize(mask, self.image_size, interpolation=cv2.INTER_NEAREST)
+        preprocessed = preprocess_image(image)
+        localization = localize_part(preprocessed)
+        image = rectify_part(preprocessed, localization, self.image_size)
+        mask = rectify_part(mask, localization, self.image_size, interpolation=cv2.INTER_NEAREST)
         if record["class"] != "scratch":
             mask = np.zeros_like(mask)
         image_tensor = torch.from_numpy(image.astype(np.float32) / 255.0).unsqueeze(0)
