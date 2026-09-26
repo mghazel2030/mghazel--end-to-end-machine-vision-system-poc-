@@ -1,0 +1,18 @@
+{
+  "center_xy": [
+    250.29464721679688,
+    214.0184326171875
+  ],
+  "angle_deg": -10.45163345336914,
+  "geometry": {
+    "rectangularity": 0.9922826019415807,
+    "solidity": 0.9929982298895789,
+    "corner_count": 4,
+    "geometry_damage": false,
+    "part_area_fraction": 0.40508775308098594
+  },
+  "scratch_fraction": 0.017164963942307692,
+  "scratch_detected": true,
+  "decision": "REJECT",
+  "latency_ms": 22.335539999971843
+}
