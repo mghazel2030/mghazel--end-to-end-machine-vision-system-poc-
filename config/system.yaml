@@ -31,3 +31,15 @@ dataset:
   blur_sigma: 0.45
   translation_px: 6
   marking_probability: 0.65
+training:
+  seed: 20260925
+  input_width_px: 256
+  input_height_px: 208
+  base_channels: 8
+  batch_size: 8
+  epochs: 3
+  learning_rate: 0.001
+  positive_weight: 8.0
+  probability_threshold: 0.5
+  minimum_scratch_fraction: 0.0005
+  device: auto

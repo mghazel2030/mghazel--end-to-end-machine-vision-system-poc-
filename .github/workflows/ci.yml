@@ -26,8 +26,8 @@ jobs:
           d=yaml.safe_load(open(p));d["dataset"]["total_images"]=20
           yaml.safe_dump(d,open("config/ci.yaml","w"))
           PY
-          python scripts/main.py --config config/ci.yaml --output results/step_02
+          python scripts/main.py --config config/ci.yaml --output results/step_03 --skip-training
       - uses: actions/upload-artifact@v4
         with:
-          name: step-02-results-py${{ matrix.python-version }}
-          path: results/step_02/
+          name: step-03-results-py${{ matrix.python-version }}
+          path: results/step_03/
