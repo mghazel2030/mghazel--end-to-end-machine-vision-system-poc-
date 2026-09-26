@@ -25,7 +25,7 @@ def load_config(path: Path) -> dict[str, Any]:
     data=yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data,dict):
         raise ConfigurationError("Configuration root must be a mapping")
-    for key in ("application","camera","motion","dataset"):
+    for key in ("application", "camera", "motion", "dataset", "training"):
         if key not in data:
             raise ConfigurationError(f"Missing section: {key}")
     d=data["dataset"]

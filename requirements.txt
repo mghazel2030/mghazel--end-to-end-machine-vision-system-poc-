@@ -1,13 +1,10 @@
-# Runtime dependencies — Step 2
-# Prefer the editable project install: python -m pip install -e ".[dev]"
-PyYAML>=6.0,<7                 # YAML configuration
-numpy>=1.26,<3                 # Deterministic numerical simulation
-opencv-python-headless>=4.9,<5 # Image synthesis/masks without GUI dependency
-matplotlib>=3.8,<4             # Headless QA/report figures
+# Step #3 runtime dependencies — Python 3.12 recommended.
+PyYAML>=6.0,<7
+numpy>=1.26,<3
+opencv-python-headless>=4.9,<5
+matplotlib>=3.8,<4
+torch>=2.2,<3
 
-# Development / CI
-pytest>=8,<10                  # Unit/integration tests
-ruff>=0.9,<1                   # Import/style/static checks
-
-# Step 3 planned: PyTorch/torchvision will be added with CPU/CUDA-specific
-# installation guidance only when the hybrid CV/PyTorch feature is implemented.
+# Development / validation tools.
+pytest>=8,<10
+ruff>=0.9,<1
