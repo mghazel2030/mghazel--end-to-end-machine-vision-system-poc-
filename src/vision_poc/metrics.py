@@ -7,7 +7,9 @@ Version: 2026-09-25
 import torch
 
 
-def binary_segmentation_metrics(logits: torch.Tensor, target: torch.Tensor, threshold: float = 0.5) -> dict[str, float]:
+def binary_segmentation_metrics(
+    logits: torch.Tensor, target: torch.Tensor, threshold: float = 0.5
+) -> dict[str, float]:
     """Compute pixel precision, recall, F1/Dice, and IoU from logits."""
     prediction = torch.sigmoid(logits) >= threshold
     truth = target >= 0.5
