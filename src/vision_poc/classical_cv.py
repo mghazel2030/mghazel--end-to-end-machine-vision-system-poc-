@@ -74,13 +74,19 @@ def localize_part(image: np.ndarray) -> LocalizationResult:
     return LocalizationResult((cx, cy), angle, (rw, rh), contour, mask)
 
 
-def rectify_part(image: np.ndarray, localization: LocalizationResult, output_size: tuple[int, int]) -> np.ndarray:
+def rectify_part(
+    image: np.ndarray,
+    localization: LocalizationResult,
+    output_size: tuple[int, int],
+    interpolation: int = cv2.INTER_AREA,
+) -> np.ndarray:
     """Rotate and crop the localized part into a canonical inspection ROI.
 
     Args:
         image: Original/preprocessed grayscale image.
         localization: Estimated part pose.
         output_size: Canonical output width and height in pixels.
+        interpolation: OpenCV interpolation mode used for final resizing.
 
     Returns:
         Rectified grayscale part image.
@@ -91,7 +97,7 @@ def rectify_part(image: np.ndarray, localization: LocalizationResult, output_siz
     width = max(8, int(round(localization.size_wh[0])))
     height = max(8, int(round(localization.size_wh[1])))
     crop = cv2.getRectSubPix(rotated, (width, height), center)
-    return cv2.resize(crop, output_size, interpolation=cv2.INTER_AREA)
+    return cv2.resize(crop, output_size, interpolation=interpolation)
 
 
 def inspect_geometry(localization: LocalizationResult, image_shape: tuple[int, int]) -> dict[str, float | bool]:

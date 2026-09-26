@@ -1,26 +1,21 @@
-# Architecture — cumulative through Step 2
+# Cumulative System Architecture — Through Step #4
 
 ```mermaid
-flowchart TD
- A[Physical requirements] --> B[Step 1 quantitative engineering]
- B --> C[Camera / lens / lighting design]
- C --> D[Step 2 synthetic acquisition simulator]
- D --> E[Pose + matte texture + illumination + noise]
- E --> F{Defect injection}
- F --> G[Normal]
- F --> H[Scratch / cut]
- F --> I[Edge damage]
- F --> J[Corner damage]
- F --> K[Mixed]
- G --> L[Image + mask + annotation]
- H --> L
- I --> L
- J --> L
- K --> L
- L --> M[Train / Validation / Test]
- M --> N[QA montage + manifest]
- N --> O[Step 3: OpenCV + PyTorch]
+flowchart LR
+  A[Requirements] --> B[Hardware Engineering]
+  B --> C[Synthetic Acquisition]
+  C --> D[Preprocessing]
+  D --> E[Localization + Pose]
+  E --> F[Rectification]
+  E --> G[Geometry Inspection]
+  F --> H[PyTorch U-Net Scratch Segmentation]
+  G --> I[Decision Fusion]
+  H --> I
+  I --> J[Validation Calibration]
+  J --> K[Held-Out Test Evaluation]
+  K --> L[PLC / Reject Simulator]
+  K --> M[Metrics + Failure Gallery + Latency]
+  L --> N[Production Integration - Step 5]
 ```
 
-Step 2 simulates data acquisition only. It does not claim optical photorealism,
-factory validation, trained-model accuracy, PLC integration or deployment.
+Step #4 implements software integration and a simulated PLC/reject contract. Physical camera/PLC/actuator integration remains outside the current synthetic PoC.

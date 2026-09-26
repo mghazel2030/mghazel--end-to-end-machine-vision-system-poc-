@@ -1,4 +1,4 @@
-# Step #3 runtime dependencies — Python 3.12 recommended.
+# Step #4 cumulative runtime dependencies — Python 3.12 recommended.
 PyYAML>=6.0,<7
 numpy>=1.26,<3
 opencv-python-headless>=4.9,<5
