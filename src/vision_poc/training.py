@@ -2,7 +2,7 @@
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 from pathlib import Path
 from typing import Any
@@ -49,7 +49,7 @@ def train_model(cfg: dict[str, Any], dataset_root: Path, output: Path) -> dict[s
     Args:
         cfg: Project configuration including training parameters.
         dataset_root: Generated synthetic dataset root.
-        output: Step #3 AI output directory.
+        output: hybrid inspection AI output directory.
 
     Returns:
         Training history, held-out test metrics, and model path.

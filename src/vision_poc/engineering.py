@@ -1,5 +1,5 @@
-"""Cumulative Step 1 engineering calculations.
-Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-25
+"""Quantitative hardware engineering calculations.
+Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-26
 """
 from dataclasses import asdict, dataclass
 from math import cos, radians, sin
@@ -8,7 +8,7 @@ from typing import Any
 
 @dataclass(frozen=True)
 class EngineeringResult:
-    """Step 1 metrics and feasibility checks."""
+    """hardware engineering metrics and feasibility checks."""
     metrics: dict[str, float]
     checks: dict[str, bool]
 

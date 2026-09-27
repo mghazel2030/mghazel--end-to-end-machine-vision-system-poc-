@@ -1,4 +1,4 @@
-"""Cumulative Step 1 regression tests."""
+"""Quantitative hardware regression tests."""
 from pathlib import Path
 
 from vision_poc.configuration import load_config

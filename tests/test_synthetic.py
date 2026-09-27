@@ -1,4 +1,4 @@
-"""Step 2 generator tests."""
+"""synthetic acquisition generator tests."""
 from pathlib import Path
 
 import cv2

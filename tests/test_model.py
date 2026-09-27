@@ -1,4 +1,4 @@
-"""Step #3 PyTorch model and metric tests."""
+"""hybrid inspection PyTorch model and metric tests."""
 import torch
 
 from vision_poc.metrics import binary_segmentation_metrics

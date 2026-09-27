@@ -1,4 +1,4 @@
-"""Tests for the Step #4 PLC/reject-station simulator."""
+"""Tests for the integrated evaluation PLC/reject-station simulator."""
 import pytest
 
 from vision_poc.plc import PLCRejectSimulator

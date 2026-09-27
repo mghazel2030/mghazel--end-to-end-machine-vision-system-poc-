@@ -1,5 +1,5 @@
 """Configuration loading/validation.
-Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-25
+Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-26
 """
 from pathlib import Path
 from typing import Any

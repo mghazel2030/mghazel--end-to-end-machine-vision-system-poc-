@@ -2,7 +2,7 @@
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 import json
 from pathlib import Path
@@ -22,7 +22,7 @@ class ScratchSegmentationDataset(Dataset):
         """Create a split-specific segmentation dataset.
 
         Args:
-            results_root: Step #3 result root containing generated Step #2 data.
+            results_root: hybrid inspection result root containing generated synthetic acquisition data.
             split: One of train, validation, or test.
             image_size: Network input width and height.
 
@@ -51,7 +51,7 @@ class ScratchSegmentationDataset(Dataset):
         """Load and normalize one image/mask pair.
 
         Only normal and scratch samples are admitted to this AI dataset. Edge, corner,
-        and mixed samples are excluded because Step #2 stores one combined defect
+        and mixed samples are excluded because synthetic acquisition stores one combined defect
         mask and therefore cannot isolate scratch pixels inside mixed samples.
         """
         record = self.records[index]

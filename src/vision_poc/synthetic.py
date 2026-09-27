@@ -5,7 +5,7 @@ legitimate markings, and exact masks for scratch, edge and corner defects.
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 from dataclasses import dataclass
 from pathlib import Path

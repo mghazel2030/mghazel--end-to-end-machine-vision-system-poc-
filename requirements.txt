@@ -1,10 +1,11 @@
-# Step #4 cumulative runtime dependencies — Python 3.12 recommended.
+# End-to-End Machine-Vision System PoC — runtime and validation dependencies
+# Recommended interpreter: Python 3.12
 PyYAML>=6.0,<7
 numpy>=1.26,<3
 opencv-python-headless>=4.9,<5
 matplotlib>=3.8,<4
 torch>=2.2,<3
 
-# Development / validation tools.
+# Quality assurance / automated tests
 pytest>=8,<10
 ruff>=0.9,<1
