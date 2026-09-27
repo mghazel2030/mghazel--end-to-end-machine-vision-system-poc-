@@ -1,11 +1,11 @@
-"""Cumulative engineering and dataset reporting.
+"""engineering and dataset reporting.
 
-This module persists the engineering outputs produced by Step #1 and the
-synthetic-dataset summary introduced in Step #2.
+This module persists the engineering outputs produced by hardware engineering and the
+synthetic-dataset summary introduced in synthetic acquisition.
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 
 import csv
@@ -23,9 +23,9 @@ from .engineering import EngineeringResult
 
 
 def save_report(result: EngineeringResult, output: Path) -> None:
-    """Save cumulative Step #1 engineering results and visualizations.
+    """Save hardware engineering engineering results and visualizations.
 
-    The function preserves the Step #1 reporting contract so that subsequent
+    The function preserves the hardware engineering reporting contract so that subsequent
     project steps remain backward-compatible with the engineering baseline.
 
     Args:
@@ -143,7 +143,7 @@ def save_report(result: EngineeringResult, output: Path) -> None:
 
     ax.set_ylim(0, 1.15)
     ax.set_ylabel("Pass = 1 / Fail = 0")
-    ax.set_title("Step #1 Engineering Feasibility Checks")
+    ax.set_title("hardware engineering Engineering Feasibility Checks")
     ax.grid(axis="y", alpha=0.3)
 
     plt.xticks(rotation=20, ha="right")
@@ -159,16 +159,16 @@ def save_report(result: EngineeringResult, output: Path) -> None:
     plt.close(fig)
 
 
-def save_step2_report(
+def save_dataset_report(
     summary: dict[str, Any],
     output: Path,
 ) -> None:
-    """Save a human-readable Step #2 synthetic-dataset report.
+    """Save a human-readable synthetic acquisition synthetic-dataset report.
 
     Args:
         summary: Dataset-generation summary containing the total sample count,
             split/class counts, and generated artifact locations.
-        output: Root Step #2 output directory.
+        output: Root synthetic acquisition output directory.
 
     Returns:
         None.
@@ -187,7 +187,7 @@ def save_step2_report(
     output.mkdir(parents=True, exist_ok=True)
 
     lines = [
-        "# Step #2 Synthetic Dataset Report",
+        "# Synthetic Dataset Report",
         "",
         f"- Total images: **{summary['total']}**",
         "- Ground truth: pixel masks, bounding boxes, and class labels.",

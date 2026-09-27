@@ -1,4 +1,4 @@
-"""Step 2 dataset integration tests."""
+"""synthetic acquisition dataset integration tests."""
 import json
 from copy import deepcopy
 from pathlib import Path

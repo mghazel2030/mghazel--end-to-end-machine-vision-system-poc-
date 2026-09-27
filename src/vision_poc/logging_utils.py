@@ -1,5 +1,5 @@
 """Logging utilities.
-Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-25
+Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-26
 """
 import logging
 from pathlib import Path

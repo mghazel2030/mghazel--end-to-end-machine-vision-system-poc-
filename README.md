@@ -1,168 +1,284 @@
 # End-to-End Machine-Vision System PoC
 
 **Repository:** `mghazel--end-to-end-machine-vision-system-poc`  
-**Current release:** Step #4 — End-to-end integration, held-out evaluation and PLC/reject simulation  
 **Author:** mghazel  
 **Submitted to:** Ascension Automation Solutions Ltd.  
-**Version:** 2026-09-25
+**Version:** 2026-09-26
 
-> **Scope honesty:** Steps #1–#3 are retained cumulatively. Step #4 integrates the hybrid inspector, performs validation-only decision calibration, evaluates the held-out synthetic test split, analyzes latency/failures, and simulates the PLC/reject handoff. Results remain synthetic-domain PoC evidence. No physical camera/PLC or factory-validated acceptance accuracy is claimed.
+> **Qualification boundary:** This repository is a standalone, executable industrial machine-vision proof of concept. It demonstrates quantitative hardware engineering, reproducible synthetic acquisition, conventional CV, PyTorch segmentation, decision calibration, held-out synthetic evaluation, PLC/reject simulation, traceability, and production-readiness planning. Synthetic-domain performance is **not** factory acceptance; representative real data and physical commissioning remain mandatory.
 
 ## 1. Application
-Inspect matte-gray 200×120 mm rectangular parts with legitimate text/logos, random ±20° orientation and small translation on a 0.5 m/s conveyor. Target dark scratches/cuts (≥0.5 mm wide, ≥5 mm long), edge damage (≥2 mm), corner damage (≥2 mm), and mixed defects.
 
-## 2. Cumulative architecture
-`requirements → hardware engineering → synthetic acquisition → preprocessing → localization/orientation → rectification → classical geometry + PyTorch scratch segmentation → decision fusion → validation calibration → held-out evaluation → PLC/reject simulation → evidence/logging`
+| Item | Practical definition |
+|---|---|
+| Product | Matte-gray rectangular part, nominally 200 × 120 mm |
+| Transport | Conveyor at 500 mm/s; one part inspected at a time |
+| Pose | Top-down imaging; up to ±20° rotation and small translation |
+| Legitimate variation | Surface texture, gray-level variation, illumination gradient, text/logos, blur/noise |
+| Scratch/cut defect | Dark line-like defect, target ≥0.5 mm wide and ≥5 mm long |
+| Edge damage | Deviation/chip from nominal straight edge, target ≥2 mm |
+| Corner damage | Damage to nominal 90° corner, target ≥2 mm |
+| Mixed defect | Appearance and geometric defects on the same part |
+| Nominal FOV | 240 × 200 mm |
+| Imaging target | ≥5 pixels across minimum scratch; ≤0.2-pixel motion blur |
+| Software target | ≤200 ms p95 inspection latency (PoC target) |
+| Output | PASS/REJECT, reason, metrics, PLC/reject event and traceable evidence |
 
-See `docs/architecture.md`, `docs/step_03_design.md`, and `docs/step_04_design.md`.
+## 2. Implemented Machine-Vision System Architecture
 
-## 3. Five-step roadmap
-| Step | Branch | Scope | Status |
+```mermaid
+flowchart TD
+  A[Requirements & Acceptance Criteria] --> B[Hardware Engineering]
+  B --> C[Synthetic Acquisition & Exact Ground Truth]
+  C --> D[Preprocessing]
+  D --> E[Part Localization & Orientation]
+  E --> F[Pose Rectification]
+  F --> G[Classical Edge/Corner Geometry]
+  F --> H[PyTorch U-Net Scratch Segmentation]
+  G --> I[Decision Fusion]
+  H --> I
+  I --> J[Validation-Only Threshold Calibration]
+  J --> K[Held-Out Test Evaluation]
+  K --> L[PLC / Reject Simulation]
+  L --> M[Evidence / Logging / Traceability]
+  M --> N[FMEA / FAT / SAT / Commissioning / Monitoring]
+```
+
+The architecture deliberately uses **deterministic CV where strong geometry exists** and **deep learning where defect appearance varies**. This reduces unnecessary model dependence and makes failure analysis easier.
+
+## 3. System Modules / Components
+
+### 3.1 Requirements
+
+| Requirement group | Implemented interpretation | Verification |
+|---|---|---|
+| Geometry | 200 × 120 mm part, ±20° pose, 240 × 200 mm FOV | Analytical envelope calculation |
+| Surface defect | ≥0.5 mm scratch width, ≥5 mm length | Pixel-sampling calculation + synthetic labels |
+| Geometry defect | ≥2 mm edge/corner damage | Deterministic geometry inspection |
+| Motion | 500 mm/s conveyor | Exposure/blur calculation |
+| Throughput | Software p95 target ≤200 ms | Held-out latency measurement |
+| Quality | High recall with controlled false accepts/rejects | Confusion matrix, recall, FAR, FRR, F1 |
+| Traceability | Per-part decision and integration evidence | CSV/JSON/logs/plots/PLC events |
+
+### 3.2 Hardware Engineering
+
+| Component | Candidate / design basis | Quantitative validation | Production verification |
 |---|---|---|---|
-| 1 | `feature/01-requirements-hardware` | Requirements/hardware engineering | Completed |
-| 2 | `feature/02-synthetic-dataset` | Synthetic images, masks, annotations, QA | Completed |
-| 3 | `feature/03-hybrid-cv-pytorch` | OpenCV localization/geometry + PyTorch U-Net | Completed |
-| 4 | `feature/04-integration-evaluation` | Decision calibration, full evaluation, PLC simulation | Implemented |
-| 5 | `feature/05-production-readiness` | FAT/SAT, domain gap, risk/maintenance | Planned |
+| Camera | Basler a2A2440-98g5mBAS-class, 2448×2048 mono global shutter | 240/2448 ≈ 0.0980 mm/px; 200/2048 ≈ 0.0977 mm/px | Verify exact SKU, frame rate, exposure, trigger, interface and availability |
+| Sampling | 0.5 mm minimum scratch | ≈5.1 pixels across minimum scratch | Confirm MTF/SNR/contrast and orientation sensitivity with physical target |
+| Lens | ~12 mm C-mount, 2/3-inch class | Sensor ≈8.45×7.07 mm; thin-lens estimate gives ~350 mm WD | Verify distortion, MTF, focus, aperture/DOF and mechanical fit |
+| Lighting | Diffuse/controlled bright-field concept | Supports dark scratch contrast on matte gray surface | Bench-select geometry, wavelength, diffuser/polarization and intensity |
+| Exposure | 30 µs design point | 500 mm/s × 30 µs = 0.015 mm motion ≈0.154 px | Verify photon budget and strobe/continuous-light thermal margin |
+| Trigger | Photoelectric/PLC trigger; encoder recommended | One image per part; deterministic tracking | Verify jitter, debounce, missed/double triggers and encoder synchronization |
+| IPC/compute | Industrial PC with CPU + GPU/edge option | Software latency measured by pipeline | Size from final model, camera SDK, I/O, storage and plant IT requirements |
+| PLC/reject | PLC handshake + reject station | 750 mm / 500 mm/s = 1.5 s nominal travel delay | Prefer encoder/sequence tracking and reject confirmation sensor |
 
-## 4. Step #1 — retained engineering basis
-The project retains the 240×200 mm FOV, 2448×2048 candidate camera, 0.5-mm minimum scratch, ≥5 px sampling target, 500 mm/s conveyor, 30 µs exposure and ≤0.2-pixel blur target. These are proposed PoC assumptions and must be verified on the physical station.
+### 3.3 Synthetic Acquisition
 
-## 5. Step #2 — retained synthetic acquisition
-The deterministic generator produces normal, scratch, edge-damage, corner-damage and mixed samples with texture, illumination gradient, pose, noise, blur and legitimate markings. It saves exact masks, bounding boxes, JSONL annotations, CSV manifest, deterministic 70/15/15 splits and a QA montage. Default development size is 400 images; a stronger final experiment can increase toward ~4,000 after runtime/storage verification.
-
-## 6. Step #3 — retained hybrid inspection
-### Classical CV
-`classical_cv.py` performs preprocessing, foreground localization, center/orientation/size estimation, canonical rectification, and deterministic geometry inspection using rectangularity, solidity and corner count.
-
-### PyTorch
-`model.py`, `torch_data.py`, `training.py` and `metrics.py` implement a compact U-Net scratch segmenter, train/validation/test execution and pixel-level precision/recall/Dice/IoU. Training uses normal + scratch samples because Step #2 mixed masks do not separate scratch pixels from geometric damage pixels.
-
-### Decision fusion
-`hybrid.py` rejects a part when either geometry damage or learned scratch detection is positive and can save each intermediate image plus final JSON result.
-
-## 7. Step #4 — validation-only decision calibration
-A key evaluation-control improvement is **test-set isolation**. `evaluation.py` uses the complete validation split to calibrate the scratch positive-area threshold inside the fused part-level decision. Candidate thresholds are swept while geometry decisions remain fixed; balanced accuracy is optimized first, with F1 and then the larger threshold used as tie-breakers.
-
-The selected threshold is then frozen before held-out test evaluation. The test set is not used to tune it.
-
-## 8. Step #4 — held-out part-level evaluation
-Ground-truth decision:
-- `normal` → PASS
-- `scratch`, `edge_damage`, `corner_damage`, `mixed` → REJECT
-
-The test evaluator saves:
-- TP/TN/FP/FN;
-- accuracy, precision, recall, specificity and F1;
-- false-reject rate = normal parts incorrectly rejected;
-- false-accept rate = defective parts incorrectly passed;
-- per-class correct-decision rates;
-- mean, median, p95 and maximum software latency;
-- per-part trace CSV;
-- confusion matrix;
-- latency histogram;
-- representative failure gallery.
-
-These metrics quantify the **synthetic PoC**, not production capability.
-
-## 9. Step #4 — PLC/reject-system simulation
-`plc.py` demonstrates the production integration contract without pretending to implement a vendor-specific protocol. Every inspected test part receives a unique ID and sequence plus PASS/REJECT, reject output, reason, inspection latency and nominal actuator delay.
-
-For reject distance `d` and conveyor speed `v`:
-
-`reject_delay_ms = 1000 × d / v`
-
-Current PoC values: 750 mm and 500 mm/s → 1500 ms nominal transport delay. A real line should normally use encoder-based tracking if conveyor speed/slip can vary.
-
-## 10. Module-by-module outputs
 ```text
-results/step_04/
-  00_step_01_engineering/
-    01_metrics/metrics.csv
-    02_feasibility/checks.csv
-    03_visualizations/*.png
-    engineering_results.json
-  01_images/{train,validation,test}/
-  02_masks/{train,validation,test}/
-  03_annotations/annotations.jsonl
-  04_qa/{manifest.csv,dataset_montage.png}
-  05_classical_cv/classical_cv_summary.json
-  06_pytorch/{best_scratch_unet.pt,training_summary.json}
-  07_hybrid_trace/
-    01_preprocessed.png
-    02_localization.png
-    03_rectified.png
-    04_scratch_probability.png
-    05_scratch_mask.png
-    06_result.json
-  08_integration_evaluation/
-    calibration.json
-    calibration_curve.png
-    evaluation_summary.json
-    part_results.csv
-    plc_events.json
-    confusion_matrix.png
-    latency_distribution.png
-    failure_gallery.png
-  dataset_summary.json
-  dataset_report.md
-logs/step_04.log
-```
-Runtime results/models/logs are reproducible and ignored by Git; representative evidence is copied under `docs/sample_results_step_04/` in this release package.
-
-## 11. PyCharm / Windows setup
-Python **3.12** is recommended.
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
-python -m pip check
-```
-In PyCharm select the repository `.venv` interpreter and repository root as the working directory. The PyTorch dependency is generic; use the appropriate official PyTorch installation for a specific CUDA workstation and verify `torch.cuda.is_available()`.
-
-## 12. Validation gates — run before Git staging
-```powershell
-python -m ruff check src scripts tests
-python -m pytest -q
-python scripts/main.py --skip-training
-python scripts/main.py
-```
-`--skip-training` verifies cumulative engineering, dataset generation and deterministic classical CV quickly. The full command additionally trains/loads the U-Net, calibrates on validation data, evaluates the held-out test split, creates plots/failure evidence and simulates PLC events.
-
-## 13. Git/GitHub — exact copy timing
-The detailed tutorial is `docs/github_workflow.md`. The critical order is:
-
-1. Finish/merge Step #3 PRs.
-2. Synchronize local `main` and `develop`.
-3. Create/switch to `feature/04-integration-evaluation`.
-4. Run `git branch` and confirm `*` is on Feature #04.
-5. **Only now copy/overwrite this cumulative Step #4 project into the repository.**
-6. Install, Ruff, pytest, smoke run, full run.
-7. Inspect `git status` and `git diff`.
-8. Stage, commit, push.
-9. PR #1 feature→develop; green CI; merge.
-10. PR #2 develop→main; green CI; merge.
-11. Synchronize local branches and stop; create Feature #05 only when Step #5 starts.
-
-Feature commit:
-```powershell
-git add .
-git status
-git commit -m "feat(04): integrate evaluation and PLC reject simulation"
-git push -u origin feature/04-integration-evaluation
+Nominal part geometry
+      + material/gray texture
+      + illumination gradient
+      + text/logo nuisance variation
+      + random pose/translation
+      + sensor blur/noise
+      + scratch / edge / corner / mixed defect
+                ↓
+ image + exact mask + bbox + class + split + metadata
 ```
 
-## 14. CI/CD
-GitHub Actions installs on Python 3.10/3.12, runs Ruff and pytest, generates a small deterministic smoke dataset, executes the non-training cumulative pipeline, and uploads the Step #4 smoke artifact. Unit tests exercise Step #4 metrics and PLC timing without forcing costly model training in CI.
+The generator is deterministic from a base seed, enabling exact regeneration and controlled QA. The default 400-image dataset is a development-scale experiment; larger and more diverse data is required for serious model optimization.
 
-## 15. Engineering interpretation
-False accepts and false rejects have different industrial consequences. A false accept sends a defective part downstream/customer; a false reject increases scrap/rework. Threshold selection should therefore eventually use customer-defined costs/acceptance criteria, not only F1. The current validation balanced-accuracy calibration is a transparent PoC policy in the absence of supplied cost weights.
+### 3.4 Preprocessing
 
-Latency also needs production context. The software p95 is compared with a 200-ms PoC target, but real timing must include exposure/acquisition, image transfer, PLC communication, line tracking and actuator response.
+| Operation | Purpose | Design intent |
+|---|---|---|
+| Grayscale handling | Stable single-channel pipeline | Matches monochrome industrial-camera concept |
+| Denoising / normalization | Reduce nuisance variation | Preserve defect edges while stabilizing localization |
+| Threshold/contour preparation | Separate part from background | Deterministic part localization |
 
-## 16. Limitations and domain gap
-Synthetic images do not reproduce the full BRDF, lens MTF/distortion, illumination drift, vibration, contamination, sensor behavior, manufacturing variability or actual defect morphology. A strong synthetic test score can demonstrate software feasibility and integration discipline, but it cannot establish factory accuracy.
+### 3.5 Localization / Orientation
 
-## 17. Step #5 preview
-Step #5 completes production readiness: real-data/domain-gap plan, FAT/SAT and commissioning protocol, FMEA/risk mitigation, fail-safe behavior, monitoring/traceability, drift and retraining triggers, maintenance/versioning, final BOM/architecture review, final presentation and lessons learned.
+```text
+Preprocessed image → foreground segmentation → dominant contour
+→ minimum-area rotated rectangle → centroid + angle + dimensions
+→ plausibility information for downstream inspection
+```
+
+The localization result is a structured contract used by rectification, geometry inspection and visual overlays.
+
+### 3.6 Rectification
+
+```text
+Detected rotated rectangle
+        ↓
+ordered corner coordinates
+        ↓
+perspective transform
+        ↓
+canonical top-down part ROI
+```
+
+Canonical rectification reduces pose variance before learned scratch segmentation and makes geometric interpretation more repeatable.
+
+### 3.7 Classical Geometry + PyTorch Scratch Segmentation
+
+| Branch | Method | Best suited for | Output |
+|---|---|---|---|
+| Classical CV | Rotated-rectangle/geometry consistency | Straight edges, 90° corners, gross chips | Geometry-damage flag + measurements |
+| PyTorch | Compact U-Net binary segmentation | Variable dark scratches/cuts | Probability map, binary mask, positive-area fraction |
+
+The U-Net training path uses normal + scratch samples because the current mixed-defect synthetic mask is combined rather than per-defect. This avoids teaching the scratch model that geometric-chip pixels are scratches.
+
+### 3.8 Decision Fusion
+
+```text
+geometry_damage == True
+            OR
+scratch_fraction >= calibrated_threshold
+            ↓
+          REJECT
+otherwise → PASS
+```
+
+The decision record retains the contributing measurements so a reject is explainable and auditable.
+
+### 3.9 Validation Calibration
+
+The scratch-area decision threshold is swept on the **validation split only**. Balanced accuracy is the primary selection criterion, followed by F1 and then threshold as tie-breakers. The selected threshold is frozen before test evaluation, preventing test-set tuning.
+
+### 3.10 Held-Out Evaluation
+
+| Evidence | Purpose |
+|---|---|
+| TP/TN/FP/FN | Direct part-level outcome counts |
+| Accuracy / precision / recall / specificity / F1 | Overall decision performance |
+| False-accept rate | Defective parts incorrectly passed |
+| False-reject rate | Good parts incorrectly rejected |
+| Per-class results | Diagnose scratch/edge/corner/mixed behavior |
+| Latency mean/median/p95/max | Throughput feasibility |
+| Confusion matrix | Visual decision summary |
+| Failure gallery | Engineering root-cause review |
+
+These metrics are synthetic-domain software evidence and must not be presented as factory-qualified accuracy.
+
+### 3.11 PLC / Reject Simulation
+
+The simulator creates an ordered event containing part ID, sequence number, PASS/REJECT decision, reason, inspection latency and reject delay. At 500 mm/s with a 750 mm camera-to-reject distance, nominal transport delay is 1.5 s. A production implementation should use PLC/encoder part tracking, handshake/watchdog logic and reject confirmation.
+
+### 3.12 Evidence / Logging
+
+| Evidence | Location / purpose |
+|---|---|
+| Engineering JSON/CSV/plots | Imaging feasibility and design review |
+| Dataset images/masks/JSONL/manifest | Ground-truth traceability |
+| Classical CV summary | Localization/geometry evidence |
+| Training summary/checkpoint | Model reproducibility |
+| Hybrid trace images | Module-by-module visual inspection |
+| Calibration JSON/curve | Threshold-selection traceability |
+| Evaluation CSV/JSON/plots | Held-out quantitative evidence |
+| PLC events | Integration contract evidence |
+| FMEA/FAT/SAT plan | Production-readiness governance |
+| Runtime log | Operational troubleshooting |
+
+## 4. Folder Structure
+
+```text
+mghazel--end-to-end-machine-vision-system-poc/
+├── .github/workflows/ci.yml
+├── config/system.yaml
+├── docs/
+│   ├── architecture.md
+│   ├── hardware_bom.csv
+│   ├── synthetic_acquisition.md
+│   ├── engineering_assumptions_and_risks.md
+│   └── production_readiness.md
+├── scripts/main.py
+├── src/vision_poc/
+│   ├── classical_cv.py
+│   ├── configuration.py
+│   ├── dataset.py
+│   ├── engineering.py
+│   ├── evaluation.py
+│   ├── hybrid.py
+│   ├── logging_utils.py
+│   ├── metrics.py
+│   ├── model.py
+│   ├── plc.py
+│   ├── production_readiness.py
+│   ├── reporting.py
+│   ├── synthetic.py
+│   ├── torch_data.py
+│   └── training.py
+├── tests/
+├── pyproject.toml
+├── requirements.txt
+└── README.md
+```
+
+Runtime execution creates `results/inspection_run/` and `logs/machine_vision_poc.log`; generated runtime evidence is intentionally separated from source code.
+
+## 5. Installation
+
+| Action | Windows PowerShell |
+|---|---|
+| Create environment | `py -3.12 -m venv .venv` |
+| Activate | `.\.venv\Scripts\Activate.ps1` |
+| Upgrade pip | `python -m pip install --upgrade pip` |
+| Install editable + dev tools | `python -m pip install -e ".[dev]"` |
+| Dependency check | `python -m pip check` |
+| Ruff | `python -m ruff check src scripts tests` |
+| Tests | `python -m pytest -q` |
+| Fast non-training run | `python scripts/main.py --skip-training` |
+| Full experiment | `python scripts/main.py` |
+
+In PyCharm, select the project `.venv` interpreter, use `scripts/main.py` as the script path, and set the repository root as the working directory.
+
+## 6. Requirements
+
+`requirements.txt` contains the standalone dependency set. Core runtime packages are PyYAML, NumPy, OpenCV-headless, Matplotlib and PyTorch; pytest and Ruff provide automated validation. Python 3.12 is recommended for the demonstrated environment.
+
+## 7. Engineering Interpretation
+
+| Observation | Interpretation / action |
+|---|---|
+| ~5 px across minimum scratch | Meets nominal sampling target, but physical detectability still depends on optics/MTF/SNR/contrast |
+| ~0.154 px estimated motion blur | Meets ≤0.2 px design target at assumed speed/exposure |
+| Hybrid architecture | Uses explicit geometry where possible and DL only where appearance variability justifies it |
+| Validation-only calibration | Protects test-set independence and reduces optimistic reporting |
+| PLC simulation | Demonstrates software contract/timing, not physical I/O qualification |
+| Synthetic evaluation | Demonstrates feasibility and exposes failure modes; does not establish production accuracy |
+
+## 8. Limitations and Domain Gap
+
+| Limitation | Why it matters | Mitigation |
+|---|---|---|
+| Synthetic material/BRDF | Real texture/specularity may differ | Collect representative real parts across lots/conditions |
+| Simplified optics | MTF, distortion, vignetting and focus variation are incomplete | Bench characterize camera/lens/light system |
+| Combined mixed-defect mask | Prevents clean per-defect multi-task supervision | Generate separate scratch/edge/corner masks |
+| Development-scale dataset/model | Metrics may be unstable | Increase data diversity, train longer, repeat seeds, compare models |
+| No physical PLC/camera | Timing/I/O faults are not physically exercised | Integrate SDK, PLC protocol, encoder, watchdog and reject confirmation |
+| No real acceptance set | Synthetic metrics cannot support factory sign-off | Freeze independent real SAT/acceptance dataset |
+
+## 9. Production Readiness
+
+The executable generates `09_production_readiness/` containing a structured FMEA and FAT/SAT/commissioning/monitoring/maintenance plan. Key principles are fail-safe handling of uncertain states, version/config/model traceability, independent real-data acceptance, monitored drift and controlled retraining/rollback.
+
+See `docs/production_readiness.md` for the complete plan.
+
+## 10. Future Work
+
+| Priority | Improvement | Expected value |
+|---|---|---|
+| 1 | Acquire representative real factory data and quantify domain gap | Required for any production claim |
+| 2 | Separate synthetic masks by defect type | Enables multi-task learning and cleaner supervision |
+| 3 | Expand dataset and nuisance distributions; train longer/multiple seeds | More stable model estimates |
+| 4 | Compare U-Net variants/anomaly methods and tune operating point | Better recall/FAR trade-off |
+| 5 | Physical camera/lens/light bench validation | Confirms sampling, MTF, exposure, DOF and contrast |
+| 6 | PLC/encoder/reject integration with watchdog and confirmation | Production control-system readiness |
+| 7 | Golden-part monitoring, drift dashboards and MLOps release controls | Lifecycle maintainability |
+| 8 | FAT/SAT execution with customer-approved acceptance criteria | Final production qualification |
+
+## 11. Final Engineering Statement
+
+The project demonstrates a coherent end-to-end industrial machine-vision design methodology: translate defect requirements into imaging constraints; select and mathematically validate candidate hardware; create traceable data; combine deterministic CV and PyTorch segmentation; calibrate without test leakage; evaluate decisions and latency; simulate control-system handoff; and explicitly plan the domain-gap, risk, commissioning and lifecycle controls required for production. The remaining gap is intentional and clearly bounded: **factory qualification requires physical hardware and representative independently labeled real production data.**

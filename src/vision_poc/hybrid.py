@@ -2,7 +2,7 @@
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 import json
 import time
@@ -20,7 +20,7 @@ from .model import TinyUNet
 def inspect_image(
     image: np.ndarray, model: TinyUNet, cfg: dict[str, Any], output: Path | None = None
 ) -> dict[str, Any]:
-    """Run the Step #3 hybrid inspection pipeline on one grayscale image.
+    """Run the hybrid inspection hybrid inspection pipeline on one grayscale image.
 
     Args:
         image: Input grayscale inspection image.

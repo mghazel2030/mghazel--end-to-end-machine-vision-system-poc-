@@ -1,4 +1,4 @@
-"""Tests for Step #4 part-level evaluation metrics."""
+"""Tests for integrated evaluation part-level evaluation metrics."""
 from vision_poc.evaluation import confusion_metrics
 
 

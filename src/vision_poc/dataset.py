@@ -1,5 +1,5 @@
 """Dataset generation, splitting, annotations and QA.
-Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-25
+Author: mghazel | Submitted to: Ascension Automation Solutions Ltd. | Version: 2026-09-26
 """
 import csv
 import json
@@ -27,7 +27,7 @@ def generate_dataset(cfg: dict[str, Any], output: Path) -> dict[str, Any]:
 
     Args:
         cfg: Validated configuration.
-        output: Step 2 output root.
+        output: synthetic acquisition output root.
     Returns:
         Dataset summary.
     Raises:
