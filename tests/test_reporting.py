@@ -1,8 +1,8 @@
-"""Step 1 output persistence smoke test.
+"""hardware engineering output persistence smoke test.
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 from pathlib import Path
 

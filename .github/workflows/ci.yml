@@ -30,8 +30,8 @@ jobs:
           with open("config/ci.yaml", "w", encoding="utf-8") as handle:
               yaml.safe_dump(data, handle)
           PY
-          python scripts/main.py --config config/ci.yaml --output results/step_04 --skip-training
+          python scripts/main.py --config config/ci.yaml --output results/ci_smoke --skip-training
       - uses: actions/upload-artifact@v4
         with:
-          name: step-04-results-py${{ matrix.python-version }}
-          path: results/step_04/
+          name: machine-vision-results-py${{ matrix.python-version }}
+          path: results/ci_smoke/

@@ -1,4 +1,4 @@
-"""Step #3 classical computer-vision tests."""
+"""hybrid inspection classical computer-vision tests."""
 from pathlib import Path
 
 from vision_poc.classical_cv import inspect_geometry, localize_part, preprocess_image

@@ -1,12 +1,12 @@
 """Dataset-level calibration, evaluation, visualization, and failure analysis.
 
-Step #4 uses the validation split for threshold calibration and preserves the
+integrated evaluation uses the validation split for threshold calibration and preserves the
 test split for final synthetic-domain evaluation. Results quantify software
 feasibility only; they are not factory acceptance measurements.
 
 Author: mghazel
 Submitted to: Ascension Automation Solutions Ltd.
-Version: 2026-09-25
+Version: 2026-09-26
 """
 import copy
 import csv
@@ -98,7 +98,7 @@ def calibrate_scratch_fraction(
     equal influence; F1 and then the larger threshold break ties.
 
     Args:
-        dataset_root: Generated cumulative dataset root.
+        dataset_root: Generated dataset root.
         model: Trained scratch-segmentation model.
         cfg: Project configuration.
 
@@ -212,7 +212,7 @@ def evaluate_test_set(
     """Evaluate the calibrated hybrid system on the held-out test split.
 
     Args:
-        dataset_root: Step #4 cumulative result root.
+        dataset_root: integrated evaluation result root.
         model: Trained PyTorch scratch model.
         cfg: Configuration with calibrated decision threshold.
         output: Evaluation output directory.
