@@ -282,3 +282,50 @@ See `docs/production_readiness.md` for the complete plan.
 ## 11. Final Engineering Statement
 
 The project demonstrates a coherent end-to-end industrial machine-vision design methodology: translate defect requirements into imaging constraints; select and mathematically validate candidate hardware; create traceable data; combine deterministic CV and PyTorch segmentation; calibrate without test leakage; evaluate decisions and latency; simulate control-system handoff; and explicitly plan the domain-gap, risk, commissioning and lifecycle controls required for production. The remaining gap is intentional and clearly bounded: **factory qualification requires physical hardware and representative independently labeled real production data.**
+
+## Presentation Evidence and Comprehensive Evaluation
+
+The default synthetic dataset contains **600 images** (70% train, 15% validation, 15% held-out test). The larger CPU-oriented dataset improves statistical support for the PoC while remaining practical for a laptop without a GPU. It does not replace representative real-factory validation.
+
+Running the full pipeline creates `results/inspection_run/10_presentation_evidence/`:
+
+```text
+10_presentation_evidence/
+├── 01_processing_sequence/
+│   ├── 01_common_test_image.png
+│   ├── 02_preprocessed.png
+│   ├── 03_localization.png
+│   ├── 04_orientation.png
+│   ├── 05_rectified.png
+│   └── processing_sequence.json
+├── 02_classical_geometry/
+│   ├── overlays_all_test_images/
+│   ├── ccv_test_results.csv
+│   ├── ccv_evaluation_summary.json
+│   └── ccv_part_level_metrics.png
+├── 03_unet/
+│   ├── dataset_examples/
+│   ├── unet_architecture.png
+│   ├── learning_curve_loss.png
+│   ├── learning_curve_dice.png
+│   ├── overlays_all_unet_test_images/
+│   ├── unet_test_metrics_per_image.csv
+│   ├── unet_evaluation_summary.json
+│   └── unet_segmentation_metrics.png
+└── 04_decision_fusion/
+    ├── overlays_all_test_images/
+    ├── fusion_test_results.csv
+    ├── fusion_evaluation_summary.json
+    └── fusion_part_level_metrics.png
+```
+
+### Evaluation interpretation
+
+| Pipeline | Evaluation population | Primary metrics |
+|---|---|---|
+| CCV geometry | All held-out test images | Accuracy, Precision, Recall, Specificity, F1, FAR, FRR |
+| CCV discrepancy mask | Normal + edge-damage + corner-damage test images | Pixel Precision, Recall, Dice, IoU |
+| U-Net scratch segmentation | All held-out normal + scratch images | Pixel Precision, Recall, Dice/F1, IoU |
+| Hybrid CCV + U-Net | All held-out test images | Accuracy, Precision, Recall, Specificity, F1, FAR, FRR |
+
+The CCV geometry branch is fundamentally **part-level defect detection** based on rectangularity, solidity, and polygon corner count. The additional discrepancy mask approximately localizes missing material for visualization and pixel-level analysis; it should not be confused with a learned semantic-segmentation model. See `docs/additional_refinements.md` for the complete scope and label-integrity rationale.

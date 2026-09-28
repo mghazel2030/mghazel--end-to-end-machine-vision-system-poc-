@@ -26,6 +26,15 @@ from vision_poc.evaluation import calibrate_scratch_fraction, evaluate_test_set,
 from vision_poc.hybrid import inspect_image
 from vision_poc.logging_utils import configure_logging
 from vision_poc.model import TinyUNet
+from vision_poc.presentation_evidence import (
+    evaluate_classical_geometry,
+    evaluate_unet,
+    save_dataset_split_evidence,
+    save_fusion_evidence,
+    save_learning_curves,
+    save_processing_sequence,
+    save_unet_architecture_diagram,
+)
 from vision_poc.production_readiness import save_production_readiness_evidence
 from vision_poc.reporting import save_dataset_report, save_report
 from vision_poc.training import train_model
@@ -137,7 +146,15 @@ def main() -> int:
         dataset_summary = generate_dataset(cfg, args.output)
         save_dataset_report(dataset_summary, args.output)
 
-        # 5) Demonstrate deterministic CV on one held-out image and persist a
+        # 5) Generate presentation-oriented evidence for one common test image,
+        # dataset split counts, and the complete held-out CCV geometry evaluation.
+        evidence_root = args.output / "10_presentation_evidence"
+        save_processing_sequence(args.output, evidence_root / "01_processing_sequence", cfg)
+        save_dataset_split_evidence(args.output, evidence_root / "03_unet" / "dataset_examples")
+        save_unet_architecture_diagram(evidence_root / "03_unet" / "unet_architecture.png")
+        evaluate_classical_geometry(args.output, evidence_root / "02_classical_geometry")
+
+        # 6) Demonstrate deterministic CV on one held-out image and persist a
         # compact summary for traceability and design review.
         sample_path = next((args.output / "01_images" / "test").glob("*.png"))
         sample = _load_demo_image(sample_path)
@@ -149,19 +166,21 @@ def main() -> int:
         (cv_dir / "classical_cv_summary.json").write_text(json.dumps(cv_summary, indent=2), encoding="utf-8")
 
         if not args.skip_training:
-            # 6) Train the scratch segmenter and restore the best validation-selected
+            # 7) Train the scratch segmenter and restore the best validation-selected
             # checkpoint. The held-out test set is not used for model selection.
             training = train_model(cfg, args.output, args.output / "06_pytorch")
             (args.output / "06_pytorch" / "training_summary.json").write_text(
                 json.dumps(training, indent=2), encoding="utf-8"
             )
             model = _load_model(cfg, training)
+            save_learning_curves(training, evidence_root / "03_unet")
+            evaluate_unet(args.output, model, cfg, evidence_root / "03_unet")
 
-            # 7) Save a complete single-part hybrid inference trace including
+            # 8) Save a complete single-part hybrid inference trace including
             # preprocessing, localization, rectification, probability, and mask.
             inspect_image(sample, model, cfg, args.output / "07_hybrid_trace")
 
-            # 8) Calibrate only on validation data; then freeze the selected
+            # 9) Calibrate only on validation data; then freeze the selected
             # threshold before touching the protected test split.
             calibrated_cfg = copy.deepcopy(cfg)
             calibration = calibrate_scratch_fraction(args.output, model, calibrated_cfg)
@@ -172,9 +191,10 @@ def main() -> int:
             (evaluation_dir / "calibration.json").write_text(json.dumps(calibration, indent=2), encoding="utf-8")
             save_calibration_curve(calibration, evaluation_dir / "calibration_curve.png")
 
-            # 9-10) Evaluate frozen logic on held-out data and generate PLC/reject
+            # 10-11) Evaluate frozen logic on held-out data and generate PLC/reject
             # events, latency statistics, confusion matrix, and failure evidence.
             evaluation = evaluate_test_set(args.output, model, calibrated_cfg, evaluation_dir)
+            save_fusion_evidence(args.output, model, calibrated_cfg, evidence_root / "04_decision_fusion")
             latency_target = float(cfg["integration"]["software_latency_target_ms"])
             evaluation["latency_target_ms"] = latency_target
             evaluation["latency_target_met"] = evaluation["latency"]["p95_ms"] <= latency_target
@@ -190,7 +210,7 @@ def main() -> int:
                 evaluation["latency"]["p95_ms"],
             )
 
-        # 11) Production-readiness artifacts explicitly separate demonstrated PoC
+        # 12) Production-readiness artifacts explicitly separate demonstrated PoC
         # evidence from controls that require physical factory commissioning.
         save_production_readiness_evidence(cfg, args.output / "09_production_readiness")
         logger.info("Machine-vision PoC completed: %d synthetic samples", dataset_summary["total"])

@@ -18,7 +18,7 @@ motion:
   exposure_us: 30
   max_blur_px: 0.2
 dataset:
-  total_images: 400
+  total_images: 1000
   image_width_px: 512
   image_height_px: 426
   classes: [normal, scratch, edge_damage, corner_damage, mixed]

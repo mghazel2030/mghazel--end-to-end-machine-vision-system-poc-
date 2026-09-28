@@ -116,3 +116,32 @@ Do **not** create Feature #05 yet. Create it only when Step #5 begins.
 | `git commit -m ...` | Save staged snapshot locally | After validation |
 | `git push -u origin X` | First push + set upstream | First publication of branch |
 | `git push` | Publish later local commits | Subsequent updates |
+
+## Final Refinement Feature — 2026-09-27
+
+Use `feature/06-additional-refinements` for the presentation-evidence and expanded-evaluation changes.
+
+```powershell
+git switch develop
+git pull origin develop
+git switch -c feature/06-additional-refinements
+```
+
+Create the branch **before** copying the cumulative refinement package over the repository root. This ensures Git records the final committed baseline as the parent and shows only the refinement delta in the pull request.
+
+After installation and validation:
+
+```powershell
+git status
+git diff
+python -m ruff check src scripts tests
+python -m pytest -q
+python scripts/main.py --skip-training
+python scripts/main.py
+git add .
+git status
+git commit -m "feat(06): add presentation evidence and expanded evaluation"
+git push -u origin feature/06-additional-refinements
+```
+
+Open PR #1 from `feature/06-additional-refinements` to `develop`. After CI passes and the PR is merged, synchronize `develop`, then open PR #2 from `develop` to `main` for the final release.
